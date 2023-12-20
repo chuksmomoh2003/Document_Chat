@@ -21,7 +21,7 @@ def load_and_index_document(uploaded_file):
         st.error("Unsupported file type: " + uploaded_file.type)
         return None
     
-    documents = loader.load_data(file=Path(uploaded_file.name))
+    documents = loader.load_data(file=Path(uploaded_file.name),custom_path="local_dir")
     index = VectorStoreIndex.from_documents(documents)
     return index.as_query_engine()
 
