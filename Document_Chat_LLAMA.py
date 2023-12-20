@@ -8,35 +8,22 @@ import streamlit as st
 from pathlib import Path
 from llama_index import download_loader, VectorStoreIndex
 import os
-import tempfile
-import shutil
 from dotenv import load_dotenv, find_dotenv
 import difflib
 
 # Function to process documents and create a query engine based on the notebooks
 def load_and_index_document(uploaded_file):
-    try:
-        # Create a temporary file to save the uploaded file
-        with tempfile.NamedTemporaryFile(delete=False, suffix=Path(uploaded_file.name).suffix) as temp_file:
-            # Write the content of the uploaded file to the temporary file
-            shutil.copyfileobj(uploaded_file, temp_file)
-            temp_file_path = temp_file.name
-
-        if uploaded_file.type == "application/pdf":
-            loader = download_loader("PDFMinerReader")()
-        elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-            loader = download_loader("DocxReader")()
-        else:
-            st.error("Unsupported file type: " + uploaded_file.type)
-            return None
-
-        documents = loader.load_data(file=Path(temp_file_path))
-        index = VectorStoreIndex.from_documents(documents)
-        return index.as_query_engine()
-
-    finally:
-        # Clean up the temporary file
-        os.unlink(temp_file_path)
+    if uploaded_file.type == "application/pdf":
+        loader = download_loader("PDFMinerReader")()
+    elif uploaded_file.type == "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
+        loader = download_loader("DocxReader")()
+    else:
+        st.error("Unsupported file type: " + uploaded_file.type)
+        return None
+    
+    documents = loader.load_data(file=Path(uploaded_file.name))
+    index = VectorStoreIndex.from_documents(documents)
+    return index.as_query_engine()
 
 # Function to check if two strings are similar
 def is_similar(str1, str2, threshold=0.8):
